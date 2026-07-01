@@ -31,8 +31,8 @@
 
 ---
 
-## M4 — Retrieval + Kimi Generation Chain (LCEL)
-- `backend/app/rag_chain.py` — retriever → prompt → Kimi via LCEL `|` pipe syntax
+## M4 — Retrieval + OpenRouter Generation Chain (LCEL)
+- `backend/app/rag_chain.py` — retriever → prompt → OpenRouter (Llama 3.3 70B) via LCEL `|` pipe syntax
 - CLI test: ask a question, see answer + retrieved source chunks
 
 **Concept:** Grounding — the LLM is instructed to answer only from retrieved context, not from its training data, to prevent hallucination on domain-specific facts.
