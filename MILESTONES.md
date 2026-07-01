@@ -58,10 +58,10 @@
 
 ---
 
-## M7 — React Frontend
+## M7 — React Frontend ✅
 - Chat UI with message list, input box, streaming token rendering
-- Source citation chips per AI response
-- Tailwind styling, loading + error states
+- Source citation chips per AI response (colour-coded by source file)
+- Tailwind styling, loading spinner, error states, auto-scroll
 
 **Concept:** Connecting a streaming SSE backend to a React frontend — handling incremental token events and flushing citations from the final event.
 
