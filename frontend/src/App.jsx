@@ -4,18 +4,27 @@ const API = 'http://localhost:8000'
 
 const basename = (s) => s.split('/').pop().split('\\').pop()
 
-const SOURCE_COLORS = {
-  'faq.csv':           'bg-blue-900/60 text-blue-300 border-blue-700',
-  'tickets.db':        'bg-purple-900/60 text-purple-300 border-purple-700',
-  'telecom_guide.pdf': 'bg-green-900/60 text-green-300 border-green-700',
+const CHIP_STYLE = {
+  'faq.csv':           { bg: '#0c1a3a', text: '#93c5fd', border: '#1e3a6e' },
+  'tickets.db':        { bg: '#1a0c3a', text: '#c4b5fd', border: '#3a1e6e' },
+  'telecom_guide.pdf': { bg: '#0c2a1a', text: '#6ee7b7', border: '#1e5a3a' },
 }
-const DEFAULT_COLOR = 'bg-slate-700/60 text-slate-300 border-slate-600'
 
 function SourceChip({ source }) {
   const name = basename(source)
-  const color = SOURCE_COLORS[name] ?? DEFAULT_COLOR
+  const s = CHIP_STYLE[name] ?? { bg: '#1e2433', text: '#94a3b8', border: '#334155' }
   return (
-    <span className={`inline-block px-2 py-0.5 rounded text-xs border font-mono ${color}`}>
+    <span style={{
+      background: s.bg,
+      color: s.text,
+      border: `1px solid ${s.border}`,
+      padding: '3px 10px',
+      borderRadius: '6px',
+      fontSize: '11px',
+      fontFamily: 'ui-monospace, monospace',
+      fontWeight: 500,
+      letterSpacing: '0.02em',
+    }}>
       {name}
     </span>
   )
@@ -24,27 +33,54 @@ function SourceChip({ source }) {
 function Message({ msg }) {
   const isUser = msg.role === 'user'
   return (
-    <div className={`flex ${isUser ? 'justify-end' : 'justify-start'} mb-4`}>
-      <div className={`max-w-[75%] flex flex-col gap-2 ${isUser ? 'items-end' : 'items-start'}`}>
-        <div className={`rounded-2xl px-4 py-3 text-sm leading-relaxed whitespace-pre-wrap
-          ${isUser
-            ? 'bg-indigo-600 text-white rounded-br-sm'
-            : 'bg-slate-800 text-slate-100 rounded-bl-sm border border-slate-700'
-          }`}>
+    <div style={{
+      display: 'flex',
+      justifyContent: isUser ? 'flex-end' : 'flex-start',
+      marginBottom: '16px',
+    }}>
+      <div style={{
+        maxWidth: '76%',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '8px',
+        alignItems: isUser ? 'flex-end' : 'flex-start',
+      }}>
+        <div style={{
+          padding: '12px 16px',
+          borderRadius: isUser ? '18px 18px 4px 18px' : '18px 18px 18px 4px',
+          fontSize: '14px',
+          lineHeight: '1.65',
+          whiteSpace: 'pre-wrap',
+          wordBreak: 'break-word',
+          background: isUser ? '#5b6cf0' : '#161e2d',
+          color: isUser ? '#fff' : '#dde4f0',
+          border: isUser ? 'none' : '1px solid #1e2a40',
+        }}>
           {msg.text}
           {msg.streaming && (
-            <span className="inline-block w-1.5 h-4 ml-1 bg-slate-400 rounded-sm animate-pulse align-middle" />
+            <span style={{
+              display: 'inline-block',
+              width: '6px',
+              height: '14px',
+              marginLeft: '4px',
+              background: '#5b6cf0',
+              borderRadius: '2px',
+              verticalAlign: 'middle',
+              animation: 'blink 1s step-end infinite',
+            }} />
           )}
         </div>
 
         {!isUser && !msg.streaming && msg.sources?.length > 0 && (
-          <div className="flex flex-wrap gap-1.5 px-1">
-            {msg.sources.map((s) => <SourceChip key={s} source={s} />)}
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', paddingLeft: '4px' }}>
+            {msg.sources.map(s => <SourceChip key={s} source={s} />)}
           </div>
         )}
 
         {msg.error && (
-          <span className="text-xs text-red-400 px-1">{msg.error}</span>
+          <span style={{ fontSize: '12px', color: '#f87171', paddingLeft: '4px' }}>
+            {msg.error}
+          </span>
         )}
       </div>
     </div>
@@ -106,7 +142,6 @@ export default function App() {
             lastEventType = line.slice(7).trim()
           } else if (line.startsWith('data: ')) {
             const payload = JSON.parse(line.slice(6))
-
             if (lastEventType === 'done' && payload.sources) {
               setMessages(prev => prev.map(m =>
                 m.id === aiId ? { ...m, streaming: false, sources: payload.sources } : m
@@ -120,13 +155,11 @@ export default function App() {
                 m.id === aiId ? { ...m, text: m.text + payload.token } : m
               ))
             }
-
             lastEventType = ''
           }
         }
       }
 
-      // Safety: clear streaming flag if done event was missed
       setMessages(prev => prev.map(m =>
         m.id === aiId && m.streaming ? { ...m, streaming: false } : m
       ))
@@ -148,67 +181,200 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 flex justify-center">
-    <div className="w-full max-w-3xl flex flex-col h-screen bg-[#0f1117] border-x border-slate-800">
+    <>
+      <style>{`
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        html, body { height: 100%; background: #080b12; font-family: system-ui, -apple-system, sans-serif; }
+        @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+        textarea { font-family: inherit; }
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #1e2a40; border-radius: 4px; }
+      `}</style>
 
-      {/* Header */}
-      <header className="flex items-center gap-3 px-6 py-4 border-b border-slate-800 shrink-0">
-        <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center text-white font-bold text-sm shrink-0">
-          T
-        </div>
-        <div className="text-left">
-          <p className="text-sm font-semibold text-white leading-none">Tele-RAG</p>
-          <p className="text-xs text-slate-500 mt-0.5">Telecom support assistant</p>
-        </div>
-        <div className="ml-auto flex gap-1.5 flex-wrap justify-end">
-          {['faq.csv', 'tickets.db', 'telecom_guide.pdf'].map(s => (
-            <SourceChip key={s} source={s} />
-          ))}
-        </div>
-      </header>
+      {/* Page centering shell */}
+      <div style={{
+        minHeight: '100vh',
+        display: 'flex',
+        justifyContent: 'center',
+        background: '#080b12',
+      }}>
+        {/* Chat container */}
+        <div style={{
+          width: '100%',
+          maxWidth: '760px',
+          height: '100vh',
+          display: 'flex',
+          flexDirection: 'column',
+          background: '#0e1420',
+          borderLeft: '1px solid #1a2236',
+          borderRight: '1px solid #1a2236',
+        }}>
 
-      {/* Messages */}
-      <div className="flex-1 overflow-y-auto px-4 py-6">
-        {messages.length === 0 && (
-          <div className="flex flex-col items-center justify-center h-full gap-2 text-center">
-            <p className="text-lg font-medium text-slate-400">Ask a telecom question</p>
-            <p className="text-sm text-slate-500">Answers grounded in your FAQ, tickets, and product guide</p>
+          {/* ── Header ─────────────────────────────────────── */}
+          <header style={{
+            flexShrink: 0,
+            display: 'flex',
+            alignItems: 'center',
+            gap: '14px',
+            padding: '16px 24px',
+            borderBottom: '1px solid #1a2236',
+          }}>
+            <div style={{
+              width: '38px',
+              height: '38px',
+              borderRadius: '10px',
+              background: 'linear-gradient(135deg, #5b6cf0, #7c3aed)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: '#fff',
+              fontWeight: 700,
+              fontSize: '15px',
+              flexShrink: 0,
+            }}>T</div>
+
+            <div>
+              <div style={{ fontSize: '14px', fontWeight: 600, color: '#e2e8f0', lineHeight: 1.2 }}>
+                Tele-RAG
+              </div>
+              <div style={{ fontSize: '11px', color: '#475569', marginTop: '2px', letterSpacing: '0.02em' }}>
+                Telecom support assistant
+              </div>
+            </div>
+
+            <div style={{ marginLeft: 'auto', display: 'flex', gap: '6px', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+              {['faq.csv', 'tickets.db', 'telecom_guide.pdf'].map(s => (
+                <SourceChip key={s} source={s} />
+              ))}
+            </div>
+          </header>
+
+          {/* ── Messages ───────────────────────────────────── */}
+          {/* min-height: 0 is required — without it flex-1 overflows the container */}
+          <div style={{
+            flex: 1,
+            minHeight: 0,
+            overflowY: 'auto',
+            padding: '24px',
+          }}>
+            {messages.length === 0 && (
+              <div style={{
+                height: '100%',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '12px',
+                textAlign: 'center',
+              }}>
+                <div style={{
+                  width: '48px',
+                  height: '48px',
+                  borderRadius: '14px',
+                  background: 'rgba(91,108,240,0.12)',
+                  border: '1px solid rgba(91,108,240,0.25)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: '22px',
+                  marginBottom: '4px',
+                }}>📡</div>
+                <div style={{ fontSize: '16px', fontWeight: 600, color: '#94a3b8' }}>
+                  Ask a telecom question
+                </div>
+                <div style={{ fontSize: '13px', color: '#475569', maxWidth: '260px', lineHeight: 1.6 }}>
+                  Answers grounded in your FAQ, support tickets, and product guide
+                </div>
+              </div>
+            )}
+            {messages.map((msg, i) => <Message key={i} msg={msg} />)}
+            <div ref={bottomRef} />
           </div>
-        )}
-        {messages.map((msg, i) => <Message key={i} msg={msg} />)}
-        <div ref={bottomRef} />
-      </div>
 
-      {/* Input */}
-      <div className="px-4 pb-6 shrink-0">
-        <div className="flex gap-2 items-end bg-slate-800 border border-slate-700 rounded-2xl px-4 py-3">
-          <textarea
-            ref={inputRef}
-            rows={1}
-            value={input}
-            onChange={e => setInput(e.target.value)}
-            onKeyDown={handleKey}
-            placeholder="Ask a question… (Enter to send)"
-            disabled={loading}
-            className="flex-1 bg-transparent text-sm text-slate-100 placeholder-slate-500 resize-none outline-none leading-relaxed disabled:opacity-50"
-            style={{ maxHeight: '120px', overflowY: 'auto' }}
-          />
-          <button
-            onClick={sendMessage}
-            disabled={!input.trim() || loading}
-            className="shrink-0 w-8 h-8 rounded-xl bg-indigo-600 hover:bg-indigo-500 disabled:opacity-40 disabled:cursor-not-allowed transition-colors flex items-center justify-center"
-          >
-            {loading
-              ? <span className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-              : <svg className="w-3.5 h-3.5 text-white" fill="currentColor" viewBox="0 0 20 20">
-                  <path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z"/>
-                </svg>
-            }
-          </button>
+          {/* ── Input ──────────────────────────────────────── */}
+          <div style={{
+            flexShrink: 0,
+            padding: '16px 24px 24px',
+            borderTop: '1px solid #1a2236',
+          }}>
+            <div style={{
+              display: 'flex',
+              gap: '10px',
+              alignItems: 'flex-end',
+              background: '#161e2d',
+              border: '1px solid #1e2a40',
+              borderRadius: '14px',
+              padding: '12px 12px 12px 16px',
+            }}>
+              <textarea
+                ref={inputRef}
+                rows={1}
+                value={input}
+                onChange={e => setInput(e.target.value)}
+                onKeyDown={handleKey}
+                placeholder="Ask a question… (Enter to send)"
+                disabled={loading}
+                style={{
+                  flex: 1,
+                  background: 'transparent',
+                  border: 'none',
+                  outline: 'none',
+                  resize: 'none',
+                  fontSize: '14px',
+                  color: '#dde4f0',
+                  lineHeight: '1.6',
+                  maxHeight: '120px',
+                  overflowY: 'auto',
+                  opacity: loading ? 0.5 : 1,
+                }}
+              />
+              <button
+                onClick={sendMessage}
+                disabled={!input.trim() || loading}
+                style={{
+                  flexShrink: 0,
+                  width: '36px',
+                  height: '36px',
+                  borderRadius: '10px',
+                  background: '#5b6cf0',
+                  border: 'none',
+                  cursor: input.trim() && !loading ? 'pointer' : 'not-allowed',
+                  opacity: input.trim() && !loading ? 1 : 0.4,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  transition: 'opacity 0.15s, background 0.15s',
+                }}
+                onMouseEnter={e => { if (!e.currentTarget.disabled) e.currentTarget.style.background = '#4f60e8' }}
+                onMouseLeave={e => { e.currentTarget.style.background = '#5b6cf0' }}
+              >
+                {loading
+                  ? <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                      <circle cx="12" cy="12" r="9" stroke="rgba(255,255,255,0.3)" strokeWidth="2.5"/>
+                      <path d="M12 3a9 9 0 0 1 9 9" stroke="white" strokeWidth="2.5" strokeLinecap="round">
+                        <animateTransform attributeName="transform" type="rotate" from="0 12 12" to="360 12 12" dur="0.75s" repeatCount="indefinite"/>
+                      </path>
+                    </svg>
+                  : <svg width="14" height="14" viewBox="0 0 20 20" fill="white">
+                      <path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z"/>
+                    </svg>
+                }
+              </button>
+            </div>
+            <div style={{
+              textAlign: 'center',
+              fontSize: '11px',
+              color: '#2a3649',
+              marginTop: '10px',
+              letterSpacing: '0.02em',
+            }}>
+              Shift+Enter for new line · Enter to send
+            </div>
+          </div>
+
         </div>
-        <p className="text-xs text-slate-600 text-center mt-2">Shift+Enter for new line · Enter to send</p>
       </div>
-    </div>
-    </div>
+    </>
   )
 }
