@@ -31,27 +31,28 @@
 
 ---
 
-## M4 — Retrieval + OpenRouter Generation Chain (LCEL)
-- `backend/app/rag_chain.py` — retriever → prompt → OpenRouter (Llama 3.3 70B) via LCEL `|` pipe syntax
+## M4 — Retrieval + OpenRouter Generation Chain (LCEL) ✅
+- `backend/app/rag_chain.py` — retriever → prompt → OpenRouter (Nemotron 3 Super 120B) via LCEL `|` pipe syntax
 - CLI test: ask a question, see answer + retrieved source chunks
 
 **Concept:** Grounding — the LLM is instructed to answer only from retrieved context, not from its training data, to prevent hallucination on domain-specific facts.
 
 ---
 
-## M5 — Eval Harness
-- `backend/scripts/eval_retrieval.py` — 5–10 fixed questions with expected source files
+## M5 — Eval Harness ✅
+- `backend/scripts/eval_retrieval.py` — 10 fixed questions with expected source files
 - Runs retrieval only (no generation), checks if expected source is in top-k
-- Prints hit-rate score table
+- Prints hit-rate score table — current score: 9/10 (90%)
 
 **Concept:** Retrieval quality must be measured independently of generation quality. A wrong retrieval guarantees a wrong answer regardless of how good the LLM is.
 
 ---
 
-## M6 — FastAPI Endpoints
-- `POST /ingest` — triggers re-ingestion
+## M6 — FastAPI Endpoints ✅
+- `POST /ingest` — triggers re-ingestion, reloads chain with fresh vectors
 - `POST /query` — streams answer via SSE, final event includes source citations
-- Proper error handling
+- CORS middleware added for React frontend (M7)
+- Chain loaded once at startup via lifespan, not per request
 
 **Concept:** SSE (Server-Sent Events) streaming lets the UI render tokens as they arrive, making LLM latency feel much lower to the user.
 
