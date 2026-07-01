@@ -323,8 +323,7 @@ export default function App() {
                   resize: 'none',
                   fontSize: '14px',
                   color: '#dde4f0',
-                  lineHeight: '1.6',
-                  maxHeight: '120px',
+                  maxHeight: '80px',
                   overflowY: 'auto',
                   opacity: loading ? 0.5 : 1,
                 }}
