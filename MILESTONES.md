@@ -22,7 +22,7 @@
 
 ---
 
-## M3 — Chunking + Embeddings + Vector Store
+## M3 — Chunking + Embeddings + Vector Store ✅
 - `backend/app/ingest.py` — split → embed → store in Chroma
 - `python -m app.ingest` re-ingests everything from `resources/`
 - Prints chunk counts per source after ingestion
