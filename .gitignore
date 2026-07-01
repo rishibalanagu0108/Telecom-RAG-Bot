@@ -1,0 +1,21 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+
+# uv / virtualenv
+.venv/
+backend/.venv/
+
+# Environment
+.env
+
+# Vector store (large, regenerable)
+backend/data/chroma_db/
+
+# Frontend
+frontend/node_modules/
+frontend/dist/
+
+# OS
+.DS_Store
